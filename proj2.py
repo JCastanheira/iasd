@@ -3,8 +3,6 @@
 import copy
 import problem2 as problem
 from datetime import datetime
-import timeit
-from collections import deque
 
 class Node:
     
