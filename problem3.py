@@ -11,13 +11,17 @@ class Strategy:
         elif argv[1]=='-u':
             print("uinformed")
         else:
-            print("Error")
-            exit(0)                
+            print("\nERROR: Choose '-i'  or '-u' for informed or uninformed search")
+            exit(0)
+        self.strat=argv[1]                
     def returnDic():
         return v_dict, l_dict
     def nextnode(self,opennodes):
-        opennodes.sort(key= lambda x: x.cost,reverse=True)
-        return opennodes.pop()
+        if self.strat == '-i':
+            informed
+        elif self.strat =='-u':
+            opennodes.sort(key= lambda x: x.cost,reverse=True)
+            return opennodes.pop()
 
 class Vertice:
     

@@ -7,9 +7,9 @@ from timeit import default_timer as timer
 
 class Node:
     
-    def __init__(self, state=({},{},{}), l_sorted=[],id='',cost=0, ):  
+    def __init__(self, state=({},{},{}), l_sorted=[],id='',path_cost=0, evaluation_cost=100):  
         self.state=state
-        self.cost=cost
+        self.path_cost=path_cost
         self.id=id
         self.l_sorted=l_sorted
     def __repr__(self):
@@ -75,5 +75,7 @@ if __name__ == '__main__':
         print((end-start)/60)
     except IOError:
         print("Can't open file")
+    except IndexError:
+        print("Insuficient number of arguments")
 
 
