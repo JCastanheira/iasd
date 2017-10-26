@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from sys import argv
 import copy
-from datetime import datetime
 
 class Strategy:
     
@@ -19,7 +18,8 @@ class Strategy:
         return v_dict, l_dict
     def nextnode(self,opennodes):
         if self.strat == '-i':
-            informed
+            print("not implemented yet....")
+            exit(0)
         elif self.strat =='-u':
             return opennodes.get()
 
@@ -134,7 +134,7 @@ def gfunction(node,operator):
         cost=rpay[launch].fixedc+ cost+v_dict[vertice].weight * l_dict[launch].varc
         rpay[launch].first = True
     else:
-        cost=cost+v_dict[vertice].weight * l_dict[launch].varc   
+        cost=cost+v_dict[vertice].weight * l_dict[launch].varc
     return cost
 
 def print_Solution(node,all_launches):
@@ -150,7 +150,7 @@ def print_Solution(node,all_launches):
                 str= str + ' '+  vertice
                 flag=True
                 launch_cost=launch_cost+v_dict[vertice].weight*l_dict[l].varc
-        launch_cost=launch_cost + l_dict[l].fixedc    
+        launch_cost=launch_cost + l_dict[l].fixedc 
         if flag:
             print(str + '   ', launch_cost)
             flag=False

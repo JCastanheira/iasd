@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
 import copy
-import problem4 as problem
 from datetime import datetime
 from timeit import default_timer as timer
 from queue import PriorityQueue
+import problem4 as problem
 import numpy as np
 
 class Node:
     
-    def __init__(self, state=({},{},[]), l_sorted=[],label='',path_cost=0, depth=0, evaluation_cost=100):  
+    def __init__(self, state=({},{},[]), l_sorted=[],label='',path_cost=0, depth=0):  
         self.state=state
         self.path_cost=path_cost
         self.label=label
@@ -66,7 +66,7 @@ def generalSearch(problem, strategy):
                 opennodes.put((childnode.path_cost,childnode))
 
 def calculate_EBF(explored, depth):
-    """Calculate the effective branching factor
+    """Calculates the effective branching factor
         explored: number of vertices visited
         depth: length of final path """
 
@@ -88,8 +88,8 @@ if __name__ == '__main__':
         generalSearch(problem,strat)
         end=timer()
 
-        print("Execution time in sec: ", end-start)
-        print("Execution time in min: ",(end-start)/60)
+        print("Elapsed time in sec: ", end-start)
+        print("Elapsed time in min: ",(end-start)/60)
     except IOError:
         print("Can't open file")
     except IndexError:
