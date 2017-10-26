@@ -9,7 +9,7 @@ class Strategy:
         if argv[1]=='-i':
             print("informed")
         elif argv[1]=='-u':
-            print("uinformed")
+            print("uninformed")
         else:
             print("\nERROR: Choose '-i'  or '-u' for informed or uninformed search")
             exit(0)
@@ -65,7 +65,6 @@ def readfile():
     
     with open(argv[2]) as openfileobject:
         for line in openfileobject:
-            print(line)
             if line[0]=='V':
                 label,weight = line.split()
                 v=Vertice(label,weight)
@@ -80,9 +79,6 @@ def readfile():
     for x in e_list:
         v_dict[x[0]].add_neighbor(v_dict[x[1]])
     
-    print([str(key) + ":" + str(v_dict[key]) for key in v_dict.keys()])
-    print([str(key) + ":" + str(l_dict[key]) for key in l_dict.keys()])   
-
 def successor(parent,operator):
     
     launch=parent.label
@@ -91,45 +87,37 @@ def successor(parent,operator):
     rpay=copy.deepcopy(parent.state[1])
     rver=parent.state[2].copy()
 
-    print(vertice +' ' + launch)
-    print("in orbit", orbit)
-
+    #check if no node in orbit
     if not orbit:
         if rpay[launch].payload-v_dict[vertice].weight>=0:
             rpay[launch].payload=rpay[launch].payload-v_dict[vertice].weight
-            print("no vertex in orbit. Added vertex: " + vertice)
             orbit[vertice]=launch
             rver.remove(vertice)
             return orbit, rpay, rver
         else:
-            print("nothing in orbit but vertex exceeds payload")
+            #no node in orbit but exceeds vertex payload
             return False
-    if vertice in orbit:
-        print("vertex already in orbit")
-        return False        
+      
     s1=set(v_dict[vertice].neighbors)
     s2=set(orbit.keys())
-    
+
+    # check if operation is possible, i.e if it has neighbor in orbit
     if not s1.isdisjoint(s2):
         if rpay[launch].payload-v_dict[vertice].weight>=0:
             rpay[launch].payload=rpay[launch].payload-v_dict[vertice].weight
             orbit[vertice]=launch
-            print("neighbor in orbit. Added vertex: " + vertice)
             rver.remove(vertice)
             return orbit, rpay, rver
         else:
-            print("payload for launch already exceeded")
+            # has neighbor but payload for launch already exceeded
             return False
     else:
-        print("no neighbor in orbit")
+        # no neighbor in orbit
         return False
 
 def isGoal(state):
-    
-    s1=set(state[0].keys())
-    s2=set(v_dict.keys())
 
-    if s1.issuperset(s2):
+    if len(state[0].keys()) == len(v_dict.keys()):
         print("goal achieved")
         return True
     else:
@@ -148,3 +136,23 @@ def gfunction(node,operator):
     else:
         cost=cost+v_dict[vertice].weight * l_dict[launch].varc   
     return cost
+
+def print_Solution(node,all_launches):
+    
+    flag=False
+    all_launches.reverse()
+    
+    for l in all_launches:
+        str=l+'     '
+        launch_cost=0
+        for vertice in node.state[0].keys():
+            if l in node.state[0][vertice]:
+                str= str + ' '+  vertice
+                flag=True
+                launch_cost=launch_cost+v_dict[vertice].weight*l_dict[l].varc
+        launch_cost=launch_cost + l_dict[l].fixedc    
+        if flag:
+            print(str + '   ', launch_cost)
+            flag=False
+    print(node.path_cost)
+    print("depth: ", node.depth)
