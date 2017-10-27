@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from sys import argv
-import copy
 
 class Strategy:
     
@@ -15,7 +14,7 @@ class Strategy:
         self.strat=argv[1]  
         
     def returnDic():
-        return v_dict, l_dict
+        return v_dict, light_ldict
     def nextnode(self,opennodes):
         if self.strat == '-i':
             print("not implemented yet....")
@@ -52,13 +51,14 @@ class Launch:
         return self.date + ' ' + str(self.payload) + ' ' + str(self.fixedc) + ' ' + str(self.varc)
 
 def returnDic():
-    return v_dict, l_dict
+    return v_dict, light_ldict
 
 def readfile():
     '''opens file containing problem domain''' 
     global v_dict 
     global l_dict
-
+    global light_ldict
+    light_ldict ={}
     v_dict = {}
     l_dict = {}
     e_list=[]
@@ -76,21 +76,21 @@ def readfile():
                 lixo,date,pl,fc,vc = line.split()
                 l=Launch(date,pl,fc,vc)
                 l_dict[l.date]=l
+                light_ldict[date]=float(pl)
     for x in e_list:
         v_dict[x[0]].add_neighbor(v_dict[x[1]])
-    
 def successor(parent,operator):
     
     launch=parent.label
     vertice=operator
     orbit=parent.state[0].copy()
-    rpay=copy.deepcopy(parent.state[1])
+    rpay=parent.state[1].copy()
     rver=parent.state[2].copy()
 
     #check if no node in orbit
     if not orbit:
-        if rpay[launch].payload-v_dict[vertice].weight>=0:
-            rpay[launch].payload=rpay[launch].payload-v_dict[vertice].weight
+        if rpay[launch]-v_dict[vertice].weight>=0:
+            rpay[launch]=rpay[launch]-v_dict[vertice].weight
             orbit[vertice]=launch
             rver.remove(vertice)
             return orbit, rpay, rver
@@ -103,8 +103,8 @@ def successor(parent,operator):
 
     # check if operation is possible, i.e if it has neighbor in orbit
     if not s1.isdisjoint(s2):
-        if rpay[launch].payload-v_dict[vertice].weight>=0:
-            rpay[launch].payload=rpay[launch].payload-v_dict[vertice].weight
+        if rpay[launch]-v_dict[vertice].weight>=0:
+            rpay[launch]=rpay[launch]-v_dict[vertice].weight
             orbit[vertice]=launch
             rver.remove(vertice)
             return orbit, rpay, rver
@@ -123,16 +123,15 @@ def isGoal(state):
     else:
         return False
 
-def gfunction(node,operator):
+def gfunction(node,operator,parent_action):
     
     launch=node.label
     vertice=operator
-    rpay=node.state[1]
     cost=node.path_cost
-    
-    if not rpay[launch].first:
-        cost=rpay[launch].fixedc+ cost+v_dict[vertice].weight * l_dict[launch].varc
-        rpay[launch].first = True
+
+    if parent_action is 'empty':
+        cost=l_dict[launch].fixedc+ cost+v_dict[vertice].weight * l_dict[launch].varc
+        #rpay[launch][1] = True
     else:
         cost=cost+v_dict[vertice].weight * l_dict[launch].varc
     return cost

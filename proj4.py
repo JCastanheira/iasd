@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import copy
 from datetime import datetime
 from timeit import default_timer as timer
 from queue import PriorityQueue
@@ -9,13 +8,13 @@ import numpy as np
 
 class Node:
     
-    def __init__(self, state=({},{},[]), l_sorted=[],label='',path_cost=0, depth=0):  
+    def __init__(self, state=({},{},[]), l_sorted=[],label='',path_cost=0, depth=0, action=''):  
         self.state=state
         self.path_cost=path_cost
         self.label=label
         self.l_sorted=l_sorted
         self.depth=depth
-
+        self.action=action
     def __repr__(self):
         return str(self.label)
     def __lt__(self, other):
@@ -25,15 +24,15 @@ def generalSearch(problem, strategy):
     '''runs problem independent general search'''
     
     opennodes=PriorityQueue()
-    v_dict,l_dict=problem.returnDic()
+    v_dict,light_ldict=problem.returnDic()
     n_explored=0 #total number of explored nodes
     #sort launches by date
-    sorted_l= list(l_dict.keys())
+    sorted_l= list(light_ldict.keys())
     sorted_l.sort(key= lambda x: datetime.strptime(x,'%d%m%Y'),reverse=True)
     all_launches=sorted_l.copy()
 
     #create initial empty node
-    root=Node(({},copy.deepcopy(l_dict),list(v_dict.keys())),sorted_l,sorted_l.pop())
+    root=Node(({},light_ldict.copy(),list(v_dict.keys())),sorted_l,sorted_l.pop(),0,0,'empty')
     opennodes.put((root.path_cost,root))
 
     while True:
@@ -53,7 +52,7 @@ def generalSearch(problem, strategy):
             newsorted=node.l_sorted.copy()
             if newsorted: #create empty node which means skips launch 
                 newlabel=newsorted.pop()
-                childnode=Node(node.state,newsorted,newlabel,node.path_cost, node.depth+1)
+                childnode=Node(node.state,newsorted,newlabel,node.path_cost, node.depth+1,'empty')
                 opennodes.put((childnode.path_cost,childnode))
 
             for vkey in node.state[2]:      # from the launches still not in orbit checks if can be a child
@@ -61,8 +60,8 @@ def generalSearch(problem, strategy):
                 newstate= problem.successor(node,operator)
                 if not newstate:            # operator doesn't produce new node
                     continue 
-                childnode=Node(newstate,node.l_sorted,node.label,node.path_cost,node.depth+1)
-                childnode.path_cost=problem.gfunction(childnode,operator)
+                childnode=Node(newstate,node.l_sorted,node.label,node.path_cost,node.depth+1,'vertex')
+                childnode.path_cost=problem.gfunction(childnode,operator,node.action)
                 opennodes.put((childnode.path_cost,childnode))
 
 def calculate_EBF(explored, depth):
