@@ -3,7 +3,7 @@
 from datetime import datetime
 from timeit import default_timer as timer
 from queue import PriorityQueue
-import problem4 as problem
+import problem5 as problem
 import numpy as np
 
 class Node:
@@ -16,7 +16,7 @@ class Node:
         self.l_sorted=l_sorted
         self.depth=depth
         self.action=action
-        self.heuristic=0
+
     def __repr__(self):
         return str(self.label)
     def __lt__(self, other):
@@ -68,15 +68,6 @@ def generalSearch(problem, strategy):
                 childnode.path_cost=problem.gfunction(childnode,operator,node.action)
                 
                 opennodes.put((problem.evaluation(childnode,operator,node.action),childnode))
-                if node.heuristic <= round((childnode.heuristic +(childnode.path_cost-node.path_cost)),4) :
-                    continue
-                else:
-                    print('parent heu: ', node.heuristic)
-                    print('child heu: ', childnode.heuristic)
-                    #print('child cost: :' ,childnode.path_cost)
-                   # print('parent cost: :',node.path_cost)
-                    print('path cost:', childnode.path_cost-node.path_cost)
-                    print( 'not consistent')
                     
 
 def calculate_EBF(explored, depth):

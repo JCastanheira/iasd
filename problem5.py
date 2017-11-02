@@ -134,7 +134,7 @@ def gfunction(node,operator,parent_action):
     else:
         cost=cost+v_dict[vertice].weight * l_dict[launch].varc
 
-    return round(cost,4)
+    return cost
 
 def h1(node):
     """ by cheapest variable cost"""
@@ -184,32 +184,10 @@ def h2(node):
              cost=cost+ v_dict[y].weight*l_dict[node.label].varc
         return cost
 
-def h3(node):
-    """ by cheapest fixed cost launch""" 
-    min_fc=l_dict[node.label].fixedc
-    cheap_launch=node.label
-    if node.l_sorted:
-       
-        for x in node.l_sorted:
-            if l_dict[x].fixedc < min_fc:
-                min_fc= l_dict[x].fixedc
-                cheap_launch=x    
-    cost=0
-    if node.state[2]:
-        for x in node.state[2]:
-            cost=cost+v_dict[x].weight*l_dict[cheap_launch].varc
-        return cost
-    else:
-        return 0
 
 def hfunction(node):
     """calculates heuristic value based on state"""
-    ''' print('Node: ', h1(node))
-    print('Node: ', h2(node))
-    print('Node: ', h3(node))
-    print('#########')'''
-    node.heuristic=round(h2(node),4)
-    return round(h2(node),4)
+    return h2(node)
 
 def evaluation(node,operator, parent_action):
     """calculates evaluation cost f(n)=h(n)+g(n)"""
@@ -218,7 +196,7 @@ def evaluation(node,operator, parent_action):
     if argv[1] == '-i':
        # if operator is 'empty':
           #  return node.path_cost + hfunction(node)
-        return round(node.path_cost+ hfunction(node),4)
+        return node.path_cost+ hfunction(node)
         
 def print_Solution(node,all_launches):
 
