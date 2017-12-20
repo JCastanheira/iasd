@@ -5,12 +5,8 @@
 # Francisco Azevedo - 78647
 
 from timeit import default_timer as timer
-from queue import PriorityQueue
-import numpy as np
 from sys import argv
 from itertools import combinations
-import copy
-
 from random import randrange
 
 def partition(lst, start, end, pivot):
@@ -34,19 +30,20 @@ def quick_sort(lst, start, end):
 
 
 def sort(lst):
+    # Sort the elements on a list
     quick_sort(lst, 0, len(lst) - 1)
     return lst
 
-def readFile(): 
+def readFile():
+    #Read the sentences from a .txt file
     global sentences
     sentences=[]
     with open(argv[1]) as file:
         for line in file: 
             sentences.append(eval(line))
-    #print(sentences)
 
 class Node:
-    #Should contain the number of literals, positive literals and negative literals
+    #Should contain the raw sentence, number of literals, positive literals and negative literals.
     def __init__(self,sentence):
         self.sentence = sentence
         self.num_literals = len(sentence)
@@ -67,7 +64,6 @@ class Node:
         return str(self.sentence)
     
     def __eq__(self, other):
-#        return self.sentence == other #para usar a priority queue arranjar outra solução
         return self.sentence == other
     
     def __iter__(self):
@@ -80,7 +76,7 @@ class Node:
         return len(self.pos_literals) < len(other.pos_literals)
         
 def buildOrdKB(sentences):
-    #Create a queue ordered by the number of literals 
+    #Create a knowledge base ordered by the number of literals to enforce the UNIT PREFERENCE method
     knowledge_base = []
     for sent in sentences:
         print(sent)
@@ -91,6 +87,7 @@ def buildOrdKB(sentences):
     return knowledge_base
 
 def buildKB(sentences):
+    #Create a non sorted knowledge base. NOT IN USE
     knowledge_base = []
     for sent in sentences:
         print(sent)
@@ -100,6 +97,7 @@ def buildKB(sentences):
     return knowledge_base
     
 def searchResolution(KB):
+    # Propositional Logic Resolution Algorithm
     while True: 
         global new_set
         new_set =[]
@@ -128,6 +126,7 @@ def searchResolution(KB):
         KB = sort(KB)
         
 def resolve(clause1,clause2):
+    # Resolve operator for a combination of two sentences
     neg1 = clause1.neg_literals.copy()
     neg2 = clause2.neg_literals.copy()
     pos1 = clause1.pos_literals.copy()
@@ -152,6 +151,7 @@ def resolve(clause1,clause2):
     return new_sentence
     
 def makeSent(neg,pos):
+    # Rebuild a sentence string from the information about the positive and negative literals
     global sentence
     sentence =[]
     for lit in neg:
@@ -166,13 +166,15 @@ def makeSent(neg,pos):
     
 if __name__ == '__main__':
     try:
+       start= timer()
        readFile()
        #KB = buildKB(sentences)
        KB = buildOrdKB(sentences)
        searchResolution(KB)
-       
+       end=timer()
+       print("\nElapsed time in sec: ", end-start)
     except IOError:
-        print("\nCan't open file")
+       print("\nCan't open file")
 
 
 
