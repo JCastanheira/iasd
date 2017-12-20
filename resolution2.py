@@ -69,6 +69,7 @@ class Node:
     def __iter__(self):
         return self
     
+    
     def __hash__(self):
         return hash(str(self.sentence))
     
@@ -163,7 +164,25 @@ def makeSent(neg,pos):
     new_node = Node(sentence)
     return new_node
     
+def simplify(output):
+    ''' simplifies clauses'''
     
+    for clause in output:
+        # performs factoring
+        if len(set(clause.sentence)) < len(clause.sentence) and (clause.sentence in output) :
+            output.remove(clause)
+            output.append(Node(list(set(clause))))
+    
+    for x in output:
+        for y in output:
+            #removes clauses implied by others
+            if set(x.sentence).issubset(y.sentence) and (y.sentence in output) and (x.sentence != y.sentence):
+                output.remove(y)
+            #removes duplicate clauses
+            if set(x.sentence).issubset(y.sentence) and (y.sentence in output) and (x is not y):
+                output.remove(y)
+    return output           
+
 if __name__ == '__main__':
     try:
        start= timer()
