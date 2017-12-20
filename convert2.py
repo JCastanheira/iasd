@@ -4,8 +4,6 @@
 # João Castanheira - 77206
 # Francisco Azevedo - 78647
 
-from timeit import default_timer as timer
-#import numpy as np
 from sys import argv
 
 def readfile():
@@ -32,23 +30,23 @@ def testSentence(sentence):
 def transform(types,sentence,i=0):
     
     if types == "<=>":
-        return str(('and',('=>',sentence[1],sentence[2]),('=>',sentence[2],sentence[1])))
+        return ('and',('=>',sentence[1],sentence[2]),('=>',sentence[2],sentence[1]))
     if types == "=>":
-        return str(('or',('not', sentence[1]),sentence[2]))
+        return ('or',('not', sentence[1]),sentence[2])
 
     if types is "not" and type(sentence[1]) is tuple:
         if testSentence(sentence[1]) == "or":
-            return str(('and',('not', sentence[1][1]), ('not', sentence[1][2])))
+            return ('and',('not', sentence[1][1]), ('not', sentence[1][2]))
         if testSentence(sentence[1]) == "and":
-            return str(('or',('not', sentence[1][1]), ('not', sentence[1][2])))
+            return ('or',('not', sentence[1][1]), ('not', sentence[1][2]))
         if testSentence(sentence[1]) == "not":
-            return "'" + str(sentence[1][1]) + "'"
+            return sentence[1][1]
     
     if types == "or":
         if i==1:
-            return str(('and', ('or', sentence[1][1], sentence[2]) , ('or', sentence[1][2], sentence[2])))
+            return ('and', ('or', sentence[1][1], sentence[2]) , ('or', sentence[1][2], sentence[2]))
         if i==2:  
-            return str(('and', ('or', sentence[2][1], sentence[1]) , ('or', sentence[2][2], sentence[1])))
+            return ('and', ('or', sentence[2][1], sentence[1]) , ('or', sentence[2][2], sentence[1]))
 
 def searchEqui(sentence):
     new = sentence
@@ -58,8 +56,7 @@ def searchEqui(sentence):
     if result == "atom" or result == "<=>":
         if result == "<=>":
             #print("found <=>")
-            aux = transform(result,sentence)
-            newsen= eval(aux)
+            newsen = transform(result,sentence)
             sen0 = searchEqui(newsen)
             return sen0
     else:
@@ -79,8 +76,7 @@ def searchImpl(sentence):
     if result == "atom" or result == "=>":
         if result == "=>":
             #print("found =>")
-            aux = transform(result,sentence)
-            newsen= eval(aux)
+            newsen = transform(result,sentence)
             sen0 = searchImpl(newsen)
             return sen0
     else:
@@ -100,8 +96,7 @@ def searchNot(sentence):
     if result == "atom" or (result == "not" and  type(sentence[1]) is tuple):
         if result == "not":
             #print("found not")
-            aux = transform(result,sentence)
-            newsen= eval(aux)
+            newsen = transform(result,sentence)
             sen0 = searchNot(newsen)
             return sen0
            
@@ -131,8 +126,7 @@ def distribute(sentence,last):
                 sen1= "transform"
 
         if sen1 == "transform":
-            aux= transform(result,new, 1)
-            newsen= eval(aux)
+            newsen= transform(result,new, 1)
             sen0 = distribute(newsen,"")
             return sen0
         else:
@@ -143,35 +137,119 @@ def distribute(sentence,last):
                     if result == 'or' and testSentence(sen2)== 'and': 
                         sen2= "transform"
                 if sen2 == "transform":
-                    aux= transform(result,new, 2)
-                    newsen= eval(aux)
+                    newsen= transform(result,new, 2)
                     sen0 = distribute(newsen,"")
                     return sen0
     return new
 
+def getDisjuctions(sentence,CNF):
+
+    result=testSentence(sentence)
+
+    if (result == "and"):
+        if sentence[1][0] != "and":
+            CNF.append(sentence[1])
+        else:
+            getDisjuctions(sentence[1],CNF)
+        if sentence[2][0] != "and":
+            CNF.append(sentence[2])
+        else:
+            getDisjuctions(sentence[2],CNF)
+    
+    return CNF
+
+def findLiterals(allClauses,clause,i):
+    '''find literals inside disjuction and create clause''' 
+    result=testSentence(clause)
+
+    if result== "atom" or result== "not":
+            allClauses[i].append(clause)
+    else:
+        findLiterals(allClauses,clause[1],i)
+        findLiterals(allClauses,clause[2],i)
+
+        
+def outputDisj(CNFlist):
+    '''get list of clauses'''
+    allClauses=[]
+    i=0
+    for clause in CNFlist:
+        allClauses.append([])
+        findLiterals(allClauses,clause,i)
+        i=i+1
+    for x in allClauses:
+        print(x)
+    return simplify(allClauses)
+
+def simplify(output):
+    ''' simplifies clauses'''
+
+    aux=output.copy()
+    for clause in aux:
+        for literal in clause:
+            # removes tautologies 
+            if type(literal) is tuple:
+                if literal[1] in clause:
+                    output.remove(clause)
+                    break
+        # performs factoring
+        if len(set(clause)) < len(clause) and (clause in output) :
+            output.remove(clause)
+            output.append(list(set(clause)))
+    
+    for x in output:
+        for y in output:
+            #removes clauses implied by others
+            if set(x).issubset(y) and (y in output) and (x !=y):
+                output.remove(y)
+            #removes duplicate clauses
+            if set(x).issubset(y) and (y in output) and (x is not y):
+                output.remove(y)
+
+    return output        
 def convert2CNF(sentence):
     
-    aux = searchEqui(sentence)
-    print("final equi:", aux)
-    print("#######################################")
-    aux= searchImpl(aux)
-    print("final impl: ", aux)
-    print("#######################################")
-    aux=searchNot(aux)
-    print("final not: ", aux)
-    aux=distribute(aux,"")
-    print("final:", aux)
-    #orConditions(aux)
+    CNF=[]
+    operator = testSentence(sentence)
 
-if __name__ == '__main__':
+    if operator == "atom" or (operator == "not" and (type(sentence[1]) is not tuple)):
+        #if sentence is a literal or negation of literal
+        CNF.append(sentence)
+    else:
+        aux = searchEqui(sentence)
+        aux = searchImpl(aux)
+        aux = searchNot(aux)
+        aux = distribute(aux,"")
+
+        if testSentence(aux) != 'or':
+            output = getDisjuctions  (aux,[])
+        else:
+            #when top operator is already a disjuction
+            output=[]
+            output.append(aux)
+        CNF = outputDisj(output)
+
+
+    print("There are ", len(CNF), " clauses")
+    for i in CNF:
+        print(i)
     
+    return CNF
+
+if __name__ == '__main__':   
     try:
-       readfile();
-       for i in sentences:
+        readfile();
+        CNF=[]
+        for i in sentences:
             print("new sentence: ", i)
-            convert2CNF(i)
-       
+            aux = convert2CNF(i)
+            for x in aux:
+                # for the new clauses checks if they don't exist already
+                if x not in CNF:
+                    CNF.append(x)
+        print("KB in CNF for this file is: ")
+        for i in CNF:
+            print(i)
+
     except IOError:
         print("Can't open file")
-    except ValueError:
-        print("Choose '-i'  or '-u' for informed or uninformed search")
