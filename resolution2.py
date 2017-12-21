@@ -5,7 +5,7 @@
 # Francisco Azevedo - 78647
 
 from timeit import default_timer as timer
-from sys import argv
+import sys
 from itertools import combinations
 from random import randrange
 
@@ -41,6 +41,16 @@ def readFile():
     with open(argv[1]) as file:
         for line in file: 
             sentences.append(eval(line))
+
+def readSdin():
+    global sentences
+
+    result=()
+    sentences=[]
+    
+    for line in sys.stdin:
+        result = eval(line)
+        sentences.append(result)
 
 class Node:
     #Should contain the raw sentence, number of literals, positive literals and negative literals.
@@ -124,7 +134,7 @@ def searchResolution(KB):
             if new_clause not in KB: # É preciso verificar também as frases que têm ordens diferentes
                 print('----->',new_clause,' added to database')
                 KB.append(new_clause)
-        KB = sort(KB)
+        KB = sort(simplify(KB))
         
 def resolve(clause1,clause2):
     # Resolve operator for a combination of two sentences
@@ -167,26 +177,41 @@ def makeSent(neg,pos):
 def simplify(output):
     ''' simplifies clauses'''
     
-    for clause in output:
+    aux=output.copy()
+    for clause in aux:
         # performs factoring
-        if len(set(clause.sentence)) < len(clause.sentence) and (clause.sentence in output) :
+        if len(set(clause.sentence)) < len(clause.sentence) and (clause in output) :
+            print(clause.sentence)
             output.remove(clause)
-            output.append(Node(list(set(clause))))
+            output.append(Node(list(set(clause.sentence))))
     
-    for x in output:
-        for y in output:
+    for x in aux:
+        if type(x.sentence) is not list:
+            a=[x.sentence]
+        else:
+            a=x.sentence
+        for y in aux:
+            if type(y.sentence) is not list:
+                b=[y.sentence]
+            else:
+                b=y.sentence
             #removes clauses implied by others
-            if set(x.sentence).issubset(y.sentence) and (y.sentence in output) and (x.sentence != y.sentence):
+            if set(a).issubset(b) and (y in output) and (a != b):
                 output.remove(y)
             #removes duplicate clauses
-            if set(x.sentence).issubset(y.sentence) and (y.sentence in output) and (x is not y):
+            if set(a).issubset(b) and (y in output) and (x is not y):
                 output.remove(y)
+    print("###########")
+    for x in output: 
+        print(x)
+    print("###########")
     return output           
 
 if __name__ == '__main__':
     try:
        start= timer()
-       readFile()
+       #readFile()
+       readSdin()
        #KB = buildKB(sentences)
        KB = buildOrdKB(sentences)
        searchResolution(KB)
@@ -194,9 +219,3 @@ if __name__ == '__main__':
        print("\nElapsed time in sec: ", end-start)
     except IOError:
        print("\nCan't open file")
-
-
-
-
-
-

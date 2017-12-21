@@ -4,8 +4,7 @@
 # João Castanheira - 77206
 # Francisco Azevedo - 78647
 
-from sys import argv
-
+import sys
 def readfile():
     '''opens file containing problem domain''' 
 
@@ -18,6 +17,15 @@ def readfile():
             result = eval(line)
             sentences.append(result)
     
+def readSdin():
+    global sentences
+
+    result=()
+    sentences=[]
+    
+    for line in sys.stdin:
+        result = eval(line)
+        sentences.append(result)
 
 def testSentence(sentence):
     
@@ -177,12 +185,12 @@ def outputDisj(CNFlist):
         allClauses.append([])
         findLiterals(allClauses,clause,i)
         i=i+1
-    for x in allClauses:
-        print(x)
+    #for x in allClauses:
+    #    print(x)
     return simplify(allClauses)
 
 def simplify(output):
-    ''' simplifies clauses'''
+    ''' simplifies list of clauses'''
 
     aux=output.copy()
     for clause in aux:
@@ -214,7 +222,7 @@ def convert2CNF(sentence):
 
     if operator == "atom" or (operator == "not" and (type(sentence[1]) is not tuple)):
         #if sentence is a literal or negation of literal
-        CNF.append(sentence)
+        CNF.append([sentence])
     else:
         aux = searchEqui(sentence)
         aux = searchImpl(aux)
@@ -230,26 +238,34 @@ def convert2CNF(sentence):
         CNF = outputDisj(output)
 
 
-    print("There are ", len(CNF), " clauses")
-    for i in CNF:
-        print(i)
+    #print("There are ", len(CNF), " clauses")
+    #for i in CNF:
+    #    print(i)
     
     return CNF
 
 if __name__ == '__main__':   
     try:
-        readfile();
+        #readfile();
+        readSdin();
         CNF=[]
         for i in sentences:
-            print("new sentence: ", i)
+            #print("new sentence: ", i)
             aux = convert2CNF(i)
             for x in aux:
                 # for the new clauses checks if they don't exist already
                 if x not in CNF:
                     CNF.append(x)
-        print("KB in CNF for this file is: ")
+        #print("KB in CNF for this file is: ")
         for i in CNF:
-            print(i)
+            if len(i) ==1:
+                if type(i[0]) is not tuple:
+                    str0= "'" + str(i[0]) + "'" 
+                    print(str0)
+                else:
+                    print(i[0])
+            else:
+                print(i)
 
     except IOError:
         print("Can't open file")
