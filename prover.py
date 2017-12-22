@@ -17,7 +17,7 @@ def readStdin():
         sentences.append(result)
     return sentences
 
-class Node:
+class Clause:
     '''Class containing the relevant information for each sentence.'''
     
     def __init__(self,sentence):
@@ -56,13 +56,13 @@ def buildOrdKB(sentences):
     
     knowledge_base = []
     for sent in sentences:
-        clause = Node(sent)
+        clause = Clause(sent)
         knowledge_base.append(clause)
     knowledge_base = sort(knowledge_base)
     return knowledge_base
 
 def partition(lst, start, end, pivot):
-    '''Partition the list to be sorted.'''
+    '''Partitions the list to be sorted.'''
     
     lst[pivot], lst[end] = lst[end], lst[pivot]
     store_index = start
@@ -87,14 +87,13 @@ def quick_sort(lst, start, end):
 
 def sort(lst):
     '''Sort the elements on a list.'''
+    
     quick_sort(lst, 0, len(lst) - 1)
     return lst
 
 
-    
 def searchResolution(KB):
-    '''Propositional logic resolution algorithm.'''
-    
+    '''Propositional logic resolution algorithm.''' 
     while True: 
         global new_set
         new_set =[]
@@ -114,7 +113,8 @@ def searchResolution(KB):
             print('False')
             return False
         for new_clause in new_set:
-            if new_clause not in KB: # É preciso verificar também as frases que têm ordens diferentes
+            if new_clause not in KB: 
+                # If new clause is not in the KB, then add it to the KB.
                 KB.append(new_clause)
         KB = sort(simplify(KB))
         
@@ -128,17 +128,20 @@ def resolve(clause1,clause2):
     del1 = list(set(neg1).intersection(pos2))
     del2 = list(set(neg2).intersection(pos1))
     if len(del1)==1 and len(del2)==0:
-        # if there is a negative literal
+        # if there is a negative literal in clause 1 that can be resolved by a positive literal in clause 2
         neg1.remove(del1[0])
         pos2.remove(del1[0])
     elif len(del2)==1 and len(del1)==0:
+        # if there is a negative literal in clause 2 that can be resolved by a positive literal in clause 1
         neg2.remove(del2[0])
         pos1.remove(del2[0])
     else:
+        # Do nothing
         return "no_op"
     new_neg = neg1+neg2
     new_pos = pos1+pos2
     if not new_neg and not new_pos:
+        # If the there are no positive and negative literals in this clause, return empty
         return "empty"
     new_sentence = makeSent(new_neg,new_pos)
     return new_sentence
@@ -154,8 +157,8 @@ def makeSent(neg,pos):
         sentence.append(lit)
     if len(sentence)==1:
         sentence=sentence[0]
-    new_node = Node(sentence)
-    return new_node
+    new_Clause = Clause(sentence)
+    return new_Clause
     
 def simplify(output):
     '''Simplifies clauses and eliminates redundancies.'''
@@ -165,7 +168,7 @@ def simplify(output):
         # performs factoring
         if len(set(clause.sentence)) < len(clause.sentence):
             output.remove(clause)
-            output.append(Node(list(set(clause.sentence))))
+            output.append(Clause(list(set(clause.sentence))))
     
     for x in aux:
         if type(x.sentence) is not list:
